@@ -1,7 +1,7 @@
 .PHONY: default install test
 all: default install test
 
-APPNAME=showip
+APPNAME=ip
 VERSION=v1.0.0
 
 gosec:

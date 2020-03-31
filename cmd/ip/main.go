@@ -10,10 +10,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bingoohuang/ip"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	logrus.Infof("TryMainIP:%s", ip.TryMainIP(""))
+
 	ListIfaces()
 	ListenAddr()
 	GetOutboundIP()
@@ -91,7 +94,7 @@ func ListenPort(port int) (net.Listener, error) {
 	return net.Listen("tcp", fmt.Sprintf(":%d", port))
 }
 
-// GetOutboundIP gets preferred outbound ip of this machine
+// GetOutboundIP gets preferred outbound ip of this machine.
 func GetOutboundIP() {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
@@ -132,8 +135,8 @@ func moreInfo() {
 	externalIP = strings.Replace(externalIP, "\n", "", -1)
 	logrus.Infof("公网IP %s", externalIP)
 
-	ip := net.ParseIP(externalIP)
-	if ip != nil {
+	eip := net.ParseIP(externalIP)
+	if eip != nil {
 		result := TabaoAPI(externalIP)
 		if result != nil {
 			logrus.Infof("TabaoAPI %+v", result)
@@ -152,7 +155,7 @@ func moreInfo() {
 	isPublicIP := IsPublicIP(net.ParseIP(externalIP))
 	logrus.Infof("%s is public ip: %v ", externalIP, isPublicIP)
 
-	logrus.Infof("PulicIP:%s", GetPulicIP())
+	logrus.Infof("PulicIP:%s", ip.GetOutboundIP())
 }
 
 func getExternal() string {
@@ -172,7 +175,7 @@ func getExternal() string {
 func TabaoAPI(ip string) *IPInfo {
 	url := "http://ip.taobao.com/service/getIpInfo.php?ip=" + ip
 
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) // nolint gosec
 	if err != nil {
 		logrus.Warnf("failed http.Get(%s), × err: %v", url, err)
 
@@ -265,15 +268,4 @@ func IsPublicIP(ip net.IP) bool {
 	}
 
 	return false
-}
-
-// GetPulicIP ...
-func GetPulicIP() string {
-	conn, _ := net.Dial("udp", "8.8.8.8:80")
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().String()
-	idx := strings.LastIndex(localAddr, ":")
-
-	return localAddr[0:idx]
 }
