@@ -1,6 +1,10 @@
 # showip
+
 show host IP addresses
 
+Usages:
+
+on mac:
 
 ```bash
 $ ip                                                                                                                                            [二  3/31 11:48:19 2020]
@@ -59,4 +63,41 @@ INFO[0022] Convert decimal number(base 10) 1022844350 to IPv4 address: 60.247.93
 INFO[0022] 0.0.0.0 isBetween 255.255.255.255 and 60.247.93.190 : true
 INFO[0022] 60.247.93.190 is public ip: true
 INFO[0022] PulicIP:192.168.162.17
+```
+
+on linux:
+
+```bash
+./ip-v1.0.0-amd64-glibc2.28
+INFO[0000] TryMainIP:192.168.1.7
+INFO[0000] go iface {Index:1 MTU:65536 Name:lo HardwareAddr: Flags:up|loopback}
+INFO[0000] 	 iface.HardwareAddr == nil ×
+INFO[0000] go iface {Index:2 MTU:1500 Name:eth0 HardwareAddr:52:54:00:ef:16:bd Flags:up|broadcast|multicast}
+INFO[0000] 	addrs [192.168.1.7/24 192.168.108.17/32]
+INFO[0000] 		√ Got
+INFO[0000] 		√ Got
+INFO[0000] go iface {Index:3 MTU:1500 Name:br-8983f91a1c88 HardwareAddr:02:42:49:a5:88:9f Flags:up|broadcast|multicast}
+INFO[0000] 	addrs [172.18.0.1/16]
+INFO[0000] 		√ Got
+INFO[0000] go iface {Index:4 MTU:1500 Name:docker0 HardwareAddr:02:42:b3:f8:ea:89 Flags:up|broadcast|multicast}
+INFO[0000] 	addrs [172.17.0.1/16]
+INFO[0000] 		√ Got
+INFO[0000] go iface {Index:7 MTU:1500 Name:br-d4979d31f397 HardwareAddr:02:42:65:78:5e:15 Flags:up|broadcast|multicast}
+INFO[0000] 	addrs [172.19.0.1/16]
+INFO[0000] 		√ Got
+INFO[0000] go iface {Index:33 MTU:1500 Name:vethb98680d HardwareAddr:ce:8b:3c:1c:c1:9a Flags:up|broadcast|multicast}
+INFO[0000] 	addrs []
+INFO[0000] go iface {Index:37 MTU:1500 Name:veth69f8b3d HardwareAddr:3e:1d:13:80:f0:a7 Flags:up|broadcast|multicast}
+INFO[0000] 	addrs []
+INFO[0000] go iface {Index:71 MTU:1500 Name:veth0d4f771 HardwareAddr:56:92:a6:2c:6f:75 Flags:up|broadcast|multicast}
+INFO[0000] 	addrs []
+INFO[0000] ListenAddrIP [::]:46049
+INFO[0000] OutboundIP 192.168.1.7:57548
+INFO[0007] 公网IP 123.206.185.162
+INFO[0007] TabaoAPI &{Code:0 Data:{Country:中国 CountryID:CN Area: AreaID: Region:上海 RegionID:310000 City:上海 CityID:310100 Isp:电信}}
+INFO[0007] Convert 123.206.185.162 to decimal number(base 10) : 2077145506
+INFO[0007] Convert decimal number(base 10) 2077145506 to IPv4 address: 123.206.185.162
+INFO[0007] 0.0.0.0 isBetween 255.255.255.255 and 123.206.185.162 : true
+INFO[0007] 123.206.185.162 is public ip: true
+INFO[0007] PulicIP:192.168.1.7
 ```
