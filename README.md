@@ -2,12 +2,31 @@
 
 show host IP addresses
 
-Usages:
+## API
+
+```go
+import "github.com/bingoohuang/ip"
+
+// ListAllIPv4 list all IPv4 addresses.
+// The input argument ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
+allIPv4s, _ := ip.ListAllIPv4()
+allEth0IPv4s, _ := ip.ListAllIPv4("eth0")
+allEth0En0IPv4s, _ := ip.ListAllIPv4("eth0", "en0")
+allEnIPv4s, _ := ip.ListAllIPv4("en*")
+
+// GetOutboundIP  gets preferred outbound ip of this machine.
+outboundIP := GetOutboundIP()
+
+// TryMainIP tries to get the main IP address and the IP addresses.
+mainIP, ipList := TryMainIP()
+```
+
+## Usages
 
 on mac:
 
 ```bash
-ip                                                                                                                                                        [二  3/31 13:26:11 2020]
+./ip                                                                                                                                                        [二  3/31 13:26:11 2020]
 INFO[0000] TryMainIP: 192.168.162.17
 INFO[0000] IP List: [192.168.162.17]
 INFO[0000] iface {Index:1 MTU:16384 Name:lo0 HardwareAddr: Flags:up|loopback|multicast}

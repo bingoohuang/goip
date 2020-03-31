@@ -8,6 +8,7 @@ import (
 )
 
 // ListAllIPv4 list all IPv4 addresses.
+// The input argument ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
 func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 	list, err := net.Interfaces()
 	if err != nil {
