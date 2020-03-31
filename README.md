@@ -15,10 +15,10 @@ allEth0En0IPv4s, _ := ip.ListAllIPv4("eth0", "en0")
 allEnIPv4s, _ := ip.ListAllIPv4("en*")
 
 // GetOutboundIP  gets preferred outbound ip of this machine.
-outboundIP := GetOutboundIP()
+outboundIP := ip.GetOutboundIP()
 
 // TryMainIP tries to get the main IP address and the IP addresses.
-mainIP, ipList := TryMainIP()
+mainIP, ipList := ip.TryMainIP()
 ```
 
 ## Usages
