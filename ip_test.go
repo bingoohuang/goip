@@ -17,5 +17,7 @@ func TestListAllIPv4(t *testing.T) {
 
 func TestGetOutboundIP(t *testing.T) {
 	logrus.Infof("GetOutboundIP:%s", ip.GetOutboundIP())
-	logrus.Infof("TryMainIP:%s", ip.TryMainIP())
+	mainIP, ipList := ip.TryMainIP()
+	logrus.Infof("TryMainIP:%s", mainIP)
+	logrus.Infof("ipList:%+v", ipList)
 }

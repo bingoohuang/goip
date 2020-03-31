@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -15,7 +16,12 @@ import (
 )
 
 func main() {
-	logrus.Infof("TryMainIP:%s", ip.TryMainIP(""))
+	iface := flag.String("iface", "", "Interface name pattern specified(eg. eth0, eth*)")
+	flag.Parse()
+
+	mainIP, ipList := ip.TryMainIP(*iface)
+	logrus.Infof("TryMainIP: %s", mainIP)
+	logrus.Infof("IP List: %v", ipList)
 
 	ListIfaces()
 	ListenAddr()
@@ -33,7 +39,7 @@ func ListIfaces() {
 	}
 
 	for _, iface := range list {
-		logrus.Infof("go iface %+v", iface)
+		logrus.Infof("iface %+v", iface)
 
 		if iface.HardwareAddr == nil {
 			logrus.Infof("\t iface.HardwareAddr == nil ×")
