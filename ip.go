@@ -8,7 +8,8 @@ import (
 )
 
 // ListAllIPv4 list all IPv4 addresses.
-// The input argument ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
+// The input argument ifaceNames are used to specified interface names
+// (filename wild match pattern supported also, like eth*)
 func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 	list, err := net.Interfaces()
 	if err != nil {
@@ -16,30 +17,21 @@ func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 	}
 
 	ips := make([]string, 0)
-
 	matcher := newIfaceNameMatcher(ifaceNames)
 
-	for _, iface := range list {
-		if iface.HardwareAddr == nil || iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback == 1 {
+	for _, i := range list {
+		if i.HardwareAddr == nil || i.Flags&net.FlagUp == 0 || i.Flags&net.FlagLoopback == 1 || !matcher.Matches(i.Name) {
 			continue
 		}
 
-		if !matcher.Matches(iface.Name) {
-			continue
-		}
-
-		addrs, err := iface.Addrs()
+		addrs, err := i.Addrs()
 		if err != nil {
 			continue
 		}
 
 		for _, addr := range addrs {
 			ipnet, ok := addr.(*net.IPNet)
-			if !ok {
-				continue
-			}
-
-			if ipnet.IP.IsLoopback() {
+			if !ok || ipnet.IP.IsLoopback() {
 				continue
 			}
 
@@ -52,8 +44,8 @@ func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 	return ips, nil
 }
 
-// GetOutboundIP  gets preferred outbound ip of this machine.
-func GetOutboundIP() string {
+// Outbound  gets preferred outbound ip of this machine.
+func Outbound() string {
 	conn, _ := net.Dial("udp", "8.8.8.8:80")
 	defer conn.Close()
 
@@ -62,14 +54,14 @@ func GetOutboundIP() string {
 	return localAddr[0:strings.LastIndex(localAddr, ":")]
 }
 
-// TryMainIP tries to get the main IP address and the IP addresses.
-func TryMainIP(ifaceName ...string) (string, []string) {
+// MainIP tries to get the main IP address and the IP addresses.
+func MainIP(ifaceName ...string) (string, []string) {
 	ips, _ := ListAllIPv4(ifaceName...)
 	if len(ips) == 1 {
 		return ips[0], ips
 	}
 
-	if oip := GetOutboundIP(); oip != "" && contains(ips, oip) {
+	if oip := Outbound(); oip != "" && contains(ips, oip) {
 		return oip, ips
 	}
 

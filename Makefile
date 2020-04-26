@@ -16,7 +16,7 @@ proxy:
 
 
 default: proxy
-	go fmt ./...&&revive .&&goimports -w .&&golangci-lint run --enable-all
+	gofmt -s -w .&&go mod tidy&&go fmt ./...&&revive .&&goimports -w .&&golangci-lint run --enable-all
 
 install: proxy
 	packr2
