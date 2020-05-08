@@ -16,8 +16,14 @@ func main() {
 	logrus.Infof("MainIP: %s, IP List: %v", mainIP, ipList)
 	logrus.Infof("OutboundIP: %v", ip.Outbound())
 
-	moreInfo()
+	allIPv4, _ := ip.ListAllIPv4()
+	logrus.Infof("IPv4: %v", allIPv4)
+
+	allIPv6, _ := ip.ListAllIPv6()
+	logrus.Infof("IPv6: %v", allIPv6)
+
 	ListIfaces()
+	moreInfo()
 }
 
 // ListIfaces 根据mode 列出本机所有IP和网卡名称
@@ -45,7 +51,7 @@ func ListIfaces() {
 			continue
 		}
 
-		logrus.Infof("\taddrs %+v", addrs)
+		got := false
 
 		for _, addr := range addrs {
 			ipnet, ok := addr.(*net.IPNet)
@@ -59,12 +65,13 @@ func ListIfaces() {
 				continue
 			}
 
-			switch len(ipnet.IP) {
-			case net.IPv4len:
-				logrus.Infof("\t\t√ Got IPv4")
-			case net.IPv6len:
-				logrus.Infof("\t\t√ Got IPv6")
-			}
+			got = true
+		}
+
+		if got {
+			logrus.Infof("\taddrs %+v √ Got", addrs)
+		} else {
+			logrus.Infof("\taddrs %+v × Failed", addrs)
 		}
 	}
 }

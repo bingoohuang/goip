@@ -29,6 +29,11 @@ package: install
 	gzip -f ~/go/bin/$(APPNAME)-$(VERSION)-darwin-amd64
 	ls -lh ~/go/bin/$(APPNAME)*
 
+
+linux:
+	GOOS=linux GOARCH=amd64 go install -ldflags="-s -w" ./...
+	upx ~/go/bin/linux_amd64/$(APPNAME)
+
 # https://hub.docker.com/_/golang
 # docker run --rm -v "$PWD":/usr/src/myapp -v "$HOME/dockergo":/go -w /usr/src/myapp golang make docker
 # docker run --rm -it -v "$PWD":/usr/src/myapp -w /usr/src/myapp golang bash

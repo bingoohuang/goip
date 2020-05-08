@@ -13,12 +13,12 @@ func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 	ips := make([]string, 0)
 
 	_, err := ListAllIP(func(ip net.IP) bool {
-		isV4 := len(ip) == net.IPv4len
-		if isV4 {
+		yes := len(ip.To4()) == net.IPv4len
+		if yes {
 			ips = append(ips, ip.To4().String())
 		}
 
-		return isV4
+		return yes
 	}, ifaceNames...)
 
 	return ips, err
@@ -30,12 +30,12 @@ func ListAllIPv6(ifaceNames ...string) ([]string, error) {
 	ips := make([]string, 0)
 
 	_, err := ListAllIP(func(ip net.IP) bool {
-		isV6 := len(ip) == net.IPv6len
-		if isV6 {
+		yes := len(ip.To4()) != net.IPv4len
+		if yes {
 			ips = append(ips, ip.To16().String())
 		}
 
-		return isV6
+		return yes
 	}, ifaceNames...)
 
 	return ips, err
