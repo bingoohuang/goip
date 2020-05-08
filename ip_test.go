@@ -15,6 +15,13 @@ func TestListAllIPv4(t *testing.T) {
 	logrus.Infof("ListAllIPv4 %+v", ips)
 }
 
+func TestListAllIPv6(t *testing.T) {
+	ips, err := ip.ListAllIPv6()
+
+	assert.Nil(t, err)
+	logrus.Infof("ListAllIPv6 %+v", ips)
+}
+
 func TestGetOutboundIP(t *testing.T) {
 	logrus.Infof("GetOutboundIP:%s", ip.GetOutboundIP())
 	mainIP, ipList := ip.TryMainIP()

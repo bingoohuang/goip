@@ -76,7 +76,12 @@ func ListIfaces() {
 				continue
 			}
 
-			logrus.Infof("\t\t√ Got")
+			switch len(ipnet.IP) {
+			case net.IPv4len:
+				logrus.Infof("\t\t√ Got IPv4")
+			case net.IPv6len:
+				logrus.Infof("\t\t√ Got IPv6")
+			}
 		}
 	}
 }

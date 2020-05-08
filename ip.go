@@ -8,14 +8,47 @@ import (
 )
 
 // ListAllIPv4 list all IPv4 addresses.
-// The input argument ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
+// ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
 func ListAllIPv4(ifaceNames ...string) ([]string, error) {
+	ips := make([]string, 0)
+
+	_, err := ListAllIP(func(ip net.IP) bool {
+		isV4 := len(ip) == net.IPv4len
+		if isV4 {
+			ips = append(ips, ip.To4().String())
+		}
+
+		return isV4
+	}, ifaceNames...)
+
+	return ips, err
+}
+
+// ListAllIPv6 list all IPv6 addresses.
+// ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
+func ListAllIPv6(ifaceNames ...string) ([]string, error) {
+	ips := make([]string, 0)
+
+	_, err := ListAllIP(func(ip net.IP) bool {
+		isV6 := len(ip) == net.IPv6len
+		if isV6 {
+			ips = append(ips, ip.To16().String())
+		}
+
+		return isV6
+	}, ifaceNames...)
+
+	return ips, err
+}
+
+// ListAllIP list all IP addresses.
+func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, error) {
 	list, err := net.Interfaces()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get interfaces, err: %w", err)
 	}
 
-	ips := make([]string, 0)
+	ips := make([]net.IP, 0)
 
 	matcher := newIfaceNameMatcher(ifaceNames)
 
@@ -43,8 +76,8 @@ func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 				continue
 			}
 
-			if ipv4 := ipnet.IP.To4(); ipv4 != nil {
-				ips = append(ips, ipv4.String())
+			if predicate(ipnet.IP) {
+				ips = append(ips, ipnet.IP)
 			}
 		}
 	}
