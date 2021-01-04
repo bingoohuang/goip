@@ -34,16 +34,16 @@ func ListIfaces() {
 		return
 	}
 
-	for _, iface := range list {
-		logrus.Infof("iface %+v", iface)
+	for _, f := range list {
+		logrus.Infof("iface %+v", f)
 
-		if iface.HardwareAddr == nil || iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback == 1 {
+		if f.HardwareAddr == nil || f.Flags&net.FlagUp == 0 || f.Flags&net.FlagLoopback == 1 {
 			continue
 		}
 
-		addrs, err := iface.Addrs()
+		addrs, err := f.Addrs()
 		if err != nil {
-			logrus.Warnf("\t failed to iface.Addrs, × err: %v", err)
+			logrus.Warnf("\t failed to f.Addrs, × err: %v", err)
 			continue
 		}
 
@@ -53,15 +53,20 @@ func ListIfaces() {
 
 		got := false
 
-		for _, addr := range addrs {
-			ipnet, ok := addr.(*net.IPNet)
-			if !ok {
-				logrus.Infof("\t\t not addr.(*net.IPNet) ×")
+		for _, a := range addrs {
+			var ip net.IP
+			switch v := a.(type) {
+			case *net.IPAddr:
+				ip = v.IP
+			case *net.IPNet:
+				ip = v.IP
+			default:
+				logrus.Infof("\t\t not .(*net.IPNet) or .(*net.IPNet) ×")
 				continue
 			}
 
-			if ipnet.IP.IsLoopback() {
-				logrus.Infof("\t\t IsLoopback ignored")
+			if ip.IsLoopback() {
+				logrus.Infof("\t\t IsLoopback ×")
 				continue
 			}
 
@@ -69,9 +74,9 @@ func ListIfaces() {
 		}
 
 		if got {
-			logrus.Infof("\taddrs %+v √ Got", addrs)
+			logrus.Infof("\taddrs %+v √", addrs)
 		} else {
-			logrus.Infof("\taddrs %+v × Failed", addrs)
+			logrus.Infof("\taddrs %+v ×", addrs)
 		}
 	}
 }

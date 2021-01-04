@@ -53,7 +53,8 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 	matcher := newIfaceNameMatcher(ifaceNames)
 
 	for _, i := range list {
-		if i.HardwareAddr == nil || i.Flags&net.FlagUp == 0 || i.Flags&net.FlagLoopback == 1 || !matcher.Matches(i.Name) {
+		f := i.Flags
+		if i.HardwareAddr == nil || f&net.FlagUp == 0 || f&net.FlagLoopback == 1 || !matcher.Matches(i.Name) {
 			continue
 		}
 
@@ -62,14 +63,19 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 			continue
 		}
 
-		for _, addr := range addrs {
-			ipnet, ok := addr.(*net.IPNet)
-			if !ok || ipnet.IP.IsLoopback() {
+		for _, a := range addrs {
+			var ip net.IP
+			switch v := a.(type) {
+			case *net.IPAddr:
+				ip = v.IP
+			case *net.IPNet:
+				ip = v.IP
+			default:
 				continue
 			}
 
-			if predicate(ipnet.IP) {
-				ips = append(ips, ipnet.IP)
+			if predicate(ip) {
+				ips = append(ips, ip)
 			}
 		}
 	}
@@ -79,12 +85,15 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 
 // Outbound  gets preferred outbound ip of this machine.
 func Outbound() string {
-	conn, _ := net.Dial("udp", "8.8.8.8:80")
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return ""
+	}
+
 	defer conn.Close()
 
-	localAddr := conn.LocalAddr().String()
-
-	return localAddr[0:strings.LastIndex(localAddr, ":")]
+	s := conn.LocalAddr().String()
+	return s[:strings.LastIndex(s, ":")]
 }
 
 // MainIP tries to get the main IP address and the IP addresses.
