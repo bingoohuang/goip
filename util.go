@@ -2,21 +2,28 @@ package ip
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
 // External returns  the external IP address.
 func External() string {
-	resp, err := http.Get("http://myexternalip.com/raw")
-	if err != nil {
+	ctx, cncl := context.WithTimeout(context.Background(), time.Second*10)
+	defer cncl()
+
+	addr := "http://myexternalip.com/raw"
+	resp, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil || resp.Body == nil {
 		return ""
 	}
+
 	defer resp.Body.Close()
 	content, _ := ioutil.ReadAll(resp.Body)
 	buf := new(bytes.Buffer)

@@ -83,12 +83,11 @@ func ListIfaces() {
 
 func moreInfo() {
 	externalIP := ip.External()
-	logrus.Infof("公网IP %s", externalIP)
-
 	if externalIP == "" {
 		return
 	}
 
+	logrus.Infof("公网IP %s", externalIP)
 	eip := net.ParseIP(externalIP)
 	if eip != nil {
 		result := ip.TabaoAPI(externalIP)

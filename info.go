@@ -1,9 +1,11 @@
 package ip
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -32,11 +34,13 @@ type IP struct {
 
 // TabaoAPI ...
 func TabaoAPI(ip string) *Info {
-	url := "http://ip.taobao.com/service/getIpInfo.php?ip=" + ip
-	resp, err := http.Get(url) // nolint gosec
+	ctx, cncl := context.WithTimeout(context.Background(), time.Second*10)
+	defer cncl()
 
+	addr := "http://ip.taobao.com/service/getIpInfo.php?ip=" + ip
+	resp, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
-		logrus.Warnf("failed http.Get(%s), × err: %v", url, err)
+		logrus.Warnf("failed http.Get(%s), × err: %v", addr, err)
 
 		return nil
 	}
