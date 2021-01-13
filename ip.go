@@ -74,13 +74,23 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 				continue
 			}
 
-			if predicate(ip) {
+			if !containsIp(ips, ip) && predicate(ip) {
 				ips = append(ips, ip)
 			}
 		}
 	}
 
 	return ips, nil
+}
+
+func containsIp(ips []net.IP, ip net.IP) bool {
+	for _, j := range ips {
+		if j.Equal(ip) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Outbound  gets preferred outbound ip of this machine.
