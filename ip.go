@@ -7,15 +7,25 @@ import (
 	"strings"
 )
 
+// IsIPv4 tells a string if in IPv4 format.
+func IsIPv4(address string) bool {
+	return strings.Count(address, ":") < 2
+}
+
+// IsIPv6 tells a string if in IPv6 format.
+func IsIPv6(address string) bool {
+	return strings.Count(address, ":") >= 2
+}
+
 // ListAllIPv4 list all IPv4 addresses.
-// ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
+// ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*).
 func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 	ips := make([]string, 0)
 
-	_, err := ListAllIP(func(ip net.IP) bool {
-		yes := len(ip.To4()) == net.IPv4len
-		if yes {
-			ips = append(ips, ip.To4().String())
+	_, err := ListAllIP(func(ip net.IP) (yes bool) {
+		s := ip.String()
+		if yes = IsIPv4(s); yes {
+			ips = append(ips, s)
 		}
 
 		return yes
@@ -25,14 +35,14 @@ func ListAllIPv4(ifaceNames ...string) ([]string, error) {
 }
 
 // ListAllIPv6 list all IPv6 addresses.
-// ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*)
+// ifaceNames are used to specified interface names (filename wild match pattern supported also, like eth*).
 func ListAllIPv6(ifaceNames ...string) ([]string, error) {
 	ips := make([]string, 0)
 
-	_, err := ListAllIP(func(ip net.IP) bool {
-		yes := len(ip.To4()) != net.IPv4len
-		if yes {
-			ips = append(ips, ip.To16().String())
+	_, err := ListAllIP(func(ip net.IP) (yes bool) {
+		s := ip.String()
+		if yes = IsIPv6(s); yes {
+			ips = append(ips, s)
 		}
 
 		return yes
@@ -49,7 +59,6 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 	}
 
 	ips := make([]net.IP, 0)
-
 	matcher := newIfaceNameMatcher(ifaceNames)
 
 	for _, i := range list {
@@ -63,27 +72,33 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 			continue
 		}
 
-		for _, a := range addrs {
-			var ip net.IP
-			switch v := a.(type) {
-			case *net.IPAddr:
-				ip = v.IP
-			case *net.IPNet:
-				ip = v.IP
-			default:
-				continue
-			}
-
-			if !containsIp(ips, ip) && predicate(ip) {
-				ips = append(ips, ip)
-			}
-		}
+		ips = collectAddresses(predicate, addrs, ips)
 	}
 
 	return ips, nil
 }
 
-func containsIp(ips []net.IP, ip net.IP) bool {
+func collectAddresses(predicate func(net.IP) bool, addrs []net.Addr, ips []net.IP) []net.IP {
+	for _, a := range addrs {
+		var ip net.IP
+		switch v := a.(type) {
+		case *net.IPAddr:
+			ip = v.IP
+		case *net.IPNet:
+			ip = v.IP
+		default:
+			continue
+		}
+
+		if !ContainsIS(ips, ip) && predicate(ip) {
+			ips = append(ips, ip)
+		}
+	}
+
+	return ips
+}
+
+func ContainsIS(ips []net.IP, ip net.IP) bool {
 	for _, j := range ips {
 		if j.Equal(ip) {
 			return true
@@ -113,15 +128,15 @@ func MainIP(ifaceName ...string) (string, []string) {
 		return ips[0], ips
 	}
 
-	if oip := Outbound(); oip != "" && contains(ips, oip) {
-		return oip, ips
+	if out := Outbound(); out != "" && contains(ips, out) {
+		return out, ips
 	}
 
 	if len(ips) > 0 {
 		return ips[0], ips
 	}
 
-	return "", ips
+	return "", nil
 }
 
 func contains(ss []string, s string) bool {

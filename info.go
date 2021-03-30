@@ -3,14 +3,12 @@ package ip
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
-// nolint lll
 // https://topic.alibabacloud.com/a/go-combat-golang-get-public-ip-view-intranet-ip-detect-ip-type-verify-ip-range-ip-address-string-and-int-conversion-judge-by-ip_1_38_10267608.html
 
 // Info ...
@@ -33,32 +31,28 @@ type IP struct {
 }
 
 // TabaoAPI ...
-func TabaoAPI(ip string) *Info {
+func TabaoAPI(ip string) (*Info, error) {
 	ctx, cncl := context.WithTimeout(context.Background(), time.Second*10)
 	defer cncl()
 
 	addr := "http://ip.taobao.com/service/getIpInfo.php?ip=" + ip
 	resp, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
-		logrus.Warnf("failed http.Get(%s), × err: %v", addr, err)
-
-		return nil
+		return nil, fmt.Errorf("failed http.Get(%s), × err: %w", addr, err)
 	}
 
 	defer resp.Body.Close()
 
 	out, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.Warnf("failed ioutil.ReadAll, × err: %v", err)
-		return nil
+		return nil, fmt.Errorf("failed ioutil.ReadAll, × err: %w", err)
 	}
 
 	var result Info
 
 	if err := json.Unmarshal(out, &result); err != nil {
-		logrus.Warnf("failed json.Unmarshal %s, × err: %v", string(out), err)
-		return nil
+		return nil, fmt.Errorf("failed json.Unmarshal %s, × err: %w", string(out), err)
 	}
 
-	return &result
+	return &result, nil
 }

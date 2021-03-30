@@ -1,10 +1,10 @@
 package ip_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/bingoohuang/ip"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,19 +12,19 @@ func TestListAllIPv4(t *testing.T) {
 	ips, err := ip.ListAllIPv4()
 
 	assert.Nil(t, err)
-	logrus.Infof("ListAllIPv4 %+v", ips)
+	log.Printf("ListAllIPv4 %+v", ips)
 }
 
 func TestListAllIPv6(t *testing.T) {
 	ips, err := ip.ListAllIPv6()
 
 	assert.Nil(t, err)
-	logrus.Infof("ListAllIPv6 %+v", ips)
+	log.Printf("ListAllIPv6 %+v", ips)
 }
 
 func TestGetOutboundIP(t *testing.T) {
-	logrus.Infof("Outbound:%s", ip.Outbound())
+	log.Printf("Outbound:%s", ip.Outbound())
 	mainIP, ipList := ip.MainIP()
-	logrus.Infof("MainIP:%s", mainIP)
-	logrus.Infof("ipList:%+v", ipList)
+	log.Printf("MainIP:%s", mainIP)
+	log.Printf("ipList:%+v", ipList)
 }

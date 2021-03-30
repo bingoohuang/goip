@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // External returns  the external IP address.
@@ -29,7 +27,7 @@ func External() string {
 	buf := new(bytes.Buffer)
 	_, _ = buf.ReadFrom(resp.Body)
 
-	return strings.Replace(string(content), "\n", "", -1)
+	return strings.ReplaceAll(string(content), "\n", "")
 }
 
 // ToDecimal converts IP to Decimal
@@ -55,7 +53,6 @@ func ToDecimal(ipnr net.IP) int64 {
 
 // FromDecimal converts decimal number(base 10) to IPv4 address.
 // https://www.browserling.com/tools/dec-to-ip
-// nolint gomnd
 func FromDecimal(ipnr int64) net.IP {
 	var bs [4]byte
 
@@ -70,7 +67,6 @@ func FromDecimal(ipnr int64) net.IP {
 // Betweens ...
 func Betweens(test, from, to net.IP) bool {
 	if from == nil || to == nil || test == nil {
-		logrus.Warnf("An IP input is nil")
 		return false
 	}
 
@@ -79,7 +75,6 @@ func Betweens(test, from, to net.IP) bool {
 	test16 := test.To16()
 
 	if from16 == nil || to16 == nil || test16 == nil {
-		logrus.Warnf("An IP did not convert to a 16 byte")
 		return false
 	}
 
@@ -87,7 +82,6 @@ func Betweens(test, from, to net.IP) bool {
 }
 
 // IsPublic checks a IPv4 address  is a public or not.
-// nolint gomnd
 func IsPublic(ip net.IP) bool {
 	if ip.IsLoopback() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() {
 		return false
