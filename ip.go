@@ -2,8 +2,11 @@ package ip
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -51,6 +54,25 @@ func ListAllIPv6(ifaceNames ...string) ([]string, error) {
 	return ips, err
 }
 
+// ListIfaceNames list all net interface names.
+func ListIfaceNames() (names []string) {
+	list, err := net.Interfaces()
+	if err != nil {
+		return nil
+	}
+
+	for _, i := range list {
+		f := i.Flags
+		if i.HardwareAddr == nil || f&net.FlagUp == 0 || f&net.FlagLoopback == 1 {
+			continue
+		}
+
+		names = append(names, i.Name)
+	}
+
+	return names
+}
+
 // ListAllIP list all IP addresses.
 func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, error) {
 	list, err := net.Interfaces()
@@ -59,7 +81,7 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 	}
 
 	ips := make([]net.IP, 0)
-	matcher := newIfaceNameMatcher(ifaceNames)
+	matcher := NewIfaceNameMatcher(ifaceNames)
 
 	for _, i := range list {
 		f := i.Flags
@@ -122,10 +144,14 @@ func Outbound() string {
 }
 
 // MainIP tries to get the main IP address and the IP addresses.
-func MainIP(ifaceName ...string) (string, []string) {
+func MainIP(verbose bool, ifaceName ...string) (string, []string) {
 	ips, _ := ListAllIPv4(ifaceName...)
 	if len(ips) == 1 {
 		return ips[0], ips
+	}
+
+	if s := findMainIPByIfconfig(verbose, ifaceName); s != "" {
+		return s, ips
 	}
 
 	if out := Outbound(); out != "" && contains(ips, out) {
@@ -137,6 +163,70 @@ func MainIP(ifaceName ...string) (string, []string) {
 	}
 
 	return "", nil
+}
+
+func findMainIPByIfconfig(verbose bool, ifaceName []string) string {
+	names := ListIfaceNames()
+	if verbose {
+		log.Printf("iface names: %s", names)
+	}
+
+	var matchedNames []string
+	matcher := NewIfaceNameMatcher(ifaceName)
+	for _, n := range names {
+		if matcher.Matches(n) {
+			matchedNames = append(matchedNames, n)
+		}
+	}
+
+	if verbose && len(matchedNames) < len(names) {
+		log.Printf("matchedNames: %s", matchedNames)
+	}
+
+	if len(matchedNames) == 0 {
+		return ""
+	}
+
+	name := matchedNames[0]
+	for _, n := range matchedNames {
+		// for en0 on mac or eth0 on linux
+		if strings.HasPrefix(n, "e") && strings.HasSuffix(n, "0") {
+			name = n
+			break
+		}
+	}
+
+	/*
+		[root@tencent-beta17 ~]# ifconfig eth0
+		eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+		        inet 192.168.108.7  netmask 255.255.255.0  broadcast 192.168.108.255
+		        ether 52:54:00:ef:16:bd  txqueuelen 1000  (Ethernet)
+		        RX packets 1838617728  bytes 885519190162 (824.7 GiB)
+		        RX errors 0  dropped 0  overruns 0  frame 0
+		        TX packets 1665532349  bytes 808544539610 (753.0 GiB)
+		        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+	*/
+	re := regexp.MustCompile(`inet\s+([\w.]+?)\s+`)
+	if verbose {
+		log.Printf("exec comd: ifconfig %s", name)
+	}
+	c := exec.Command("ifconfig", name)
+	if co, err := c.Output(); err == nil {
+		if verbose {
+			log.Printf("output: %s", co)
+		}
+		sub := re.FindStringSubmatch(string(co))
+		if len(sub) > 1 {
+			if verbose {
+				log.Printf("found: %s", sub[1])
+			}
+			return sub[1]
+		}
+	} else if verbose {
+		log.Printf("error: %v", err)
+	}
+
+	return ""
 }
 
 func contains(ss []string, s string) bool {
@@ -162,15 +252,15 @@ func MakeSliceMap(ss []string) map[string]bool {
 	return m
 }
 
-type ifaceNameMatcher struct {
+type IfaceNameMatcher struct {
 	ifacePatterns map[string]bool
 }
 
-func newIfaceNameMatcher(ss []string) ifaceNameMatcher {
-	return ifaceNameMatcher{ifacePatterns: MakeSliceMap(ss)}
+func NewIfaceNameMatcher(ss []string) IfaceNameMatcher {
+	return IfaceNameMatcher{ifacePatterns: MakeSliceMap(ss)}
 }
 
-func (i ifaceNameMatcher) Matches(name string) bool {
+func (i IfaceNameMatcher) Matches(name string) bool {
 	if len(i.ifacePatterns) == 0 {
 		return true
 	}
@@ -181,6 +271,12 @@ func (i ifaceNameMatcher) Matches(name string) bool {
 
 	for k := range i.ifacePatterns {
 		if ok, _ := filepath.Match(k, name); ok {
+			return true
+		}
+	}
+
+	for k := range i.ifacePatterns {
+		if strings.Contains(k, name) {
 			return true
 		}
 	}

@@ -19,28 +19,29 @@ func main() {
 		*v4 = true
 	}
 
-	_, ipList := ip.MainIP(*iface)
+	mainIP, ipList := ip.MainIP(*verbose, *iface)
+	log.Printf("Main IP: %s", mainIP)
 	log.Printf("IP: %v", ipList)
 	log.Printf("Outbound IP: %v", ip.Outbound())
 
 	if *v4 {
-		allIPv4, _ := ip.ListAllIPv4()
+		allIPv4, _ := ip.ListAllIPv4(*iface)
 		log.Printf("IPv4: %v", allIPv4)
 	}
 
 	if *v6 {
-		allIPv6, _ := ip.ListAllIPv6()
+		allIPv6, _ := ip.ListAllIPv6(*iface)
 		log.Printf("IPv6: %v", allIPv6)
 	}
 
 	if *verbose {
-		ListIfaces(*v4, *v6)
+		ListIfaces(*v4, *v6, *iface)
 		moreInfo()
 	}
 }
 
 // ListIfaces 根据mode 列出本机所有IP和网卡名称.
-func ListIfaces(v4, v6 bool) {
+func ListIfaces(v4, v6 bool, ifaceName string) {
 	list, err := net.Interfaces()
 	if err != nil {
 		log.Printf("failed to get interfaces, err: %v", err)
@@ -48,14 +49,14 @@ func ListIfaces(v4, v6 bool) {
 	}
 
 	for _, f := range list {
-		listIface(f, v4, v6)
+		listIface(f, v4, v6, ifaceName)
 	}
 }
 
-func listIface(f net.Interface, v4, v6 bool) {
-	log.Printf("iface %+v", f)
+func listIface(f net.Interface, v4, v6 bool, ifaceName string) {
+	matcher := ip.NewIfaceNameMatcher([]string{ifaceName})
 
-	if f.HardwareAddr == nil || f.Flags&net.FlagUp == 0 || f.Flags&net.FlagLoopback == 1 {
+	if f.HardwareAddr == nil || f.Flags&net.FlagUp == 0 || f.Flags&net.FlagLoopback == 1 || !matcher.Matches(f.Name) {
 		return
 	}
 
@@ -72,6 +73,7 @@ func listIface(f net.Interface, v4, v6 bool) {
 	got := false
 	for _, a := range addrs {
 		var netip net.IP
+		log.Printf("addr(%T): %s", a, a)
 		switch v := a.(type) {
 		case *net.IPAddr:
 			netip = v.IP
@@ -82,7 +84,7 @@ func listIface(f net.Interface, v4, v6 bool) {
 			continue
 		}
 
-		if len(netip) == net.IPv4len && !v4 || len(netip) == net.IPv6len && !v6 {
+		if ip.IsIPv4(netip.String()) && !v4 || ip.IsIPv6(netip.String()) && !v6 {
 			continue
 		}
 
