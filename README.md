@@ -169,6 +169,60 @@ $ hostname -I
 192.168.1.7 192.168.1.17 172.18.0.1 172.17.0.1 172.19.0.1 10.42.2.0
 ```
 
+```shell
+[root@tencent-beta17 ~]# ifconfig eth0
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.108.7  netmask 255.255.255.0  broadcast 192.168.108.255
+        ether 52:54:00:ef:16:bd  txqueuelen 1000  (Ethernet)
+        RX packets 1838617728  bytes 885519190162 (824.7 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1665532349  bytes 808544539610 (753.0 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+[root@tencent-beta17 ~]# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 52:54:00:ef:16:bd brd ff:ff:ff:ff:ff:ff
+    inet 192.168.108.7/24 brd 192.168.108.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet 192.168.108.17/32 brd 192.168.108.255 scope global eth0
+       valid_lft forever preferred_lft forever
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether 02:42:f7:47:e6:02 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+       valid_lft forever preferred_lft forever
+4: br-d4979d31f397: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+    link/ether 02:42:17:47:99:97 brd ff:ff:ff:ff:ff:ff
+    inet 172.19.0.1/16 brd 172.19.255.255 scope global br-d4979d31f397
+       valid_lft forever preferred_lft forever
+14: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UNKNOWN
+    link/ether 2e:09:7c:c5:b0:83 brd ff:ff:ff:ff:ff:ff
+    inet 10.42.2.0/32 scope global flannel.1
+       valid_lft forever preferred_lft forever
+849: veth120ec58@if848: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-d4979d31f397 state UP
+    link/ether 42:33:d1:8a:ed:55 brd ff:ff:ff:ff:ff:ff link-netnsid 1
+851: veth62f525c@if850: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-d4979d31f397 state UP
+    link/ether 62:eb:7f:58:ac:f3 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+852: cali84fc7ac85e8@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP
+    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netnsid 3
+```
+
+mac:
+
+```sh
+➜  ip git:(master) ✗ ifconfig en0
+en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	options=400<CHANNEL_IO>
+	ether f0:18:98:a5:12:27
+	inet6 fe80::40d:d0ee:8501:f4a7%en0 prefixlen 64 secured scopeid 0xa
+	inet 192.168.162.21 netmask 0xffffff00 broadcast 192.168.162.255
+	nd6 options=201<PERFORMNUD,DAD>
+	media: autoselect
+	status: active
+```
+
 ## thanks to the Giant Shoulders
 
 1. [A minimalist HTTP headers inspector](http://gethttp.info/)
