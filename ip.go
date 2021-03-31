@@ -144,7 +144,12 @@ func Outbound() string {
 }
 
 // MainIP tries to get the main IP address and the IP addresses.
-func MainIP(verbose bool, ifaceName ...string) (string, []string) {
+func MainIP(ifaceName ...string) (string, []string) {
+	return MainIPVerbose(false, ifaceName...)
+}
+
+// MainIPVerbose tries to get the main IP address and the IP addresses.
+func MainIPVerbose(verbose bool, ifaceName ...string) (string, []string) {
 	ips, _ := ListAllIPv4(ifaceName...)
 	if len(ips) == 1 {
 		return ips[0], ips

@@ -19,7 +19,7 @@ func main() {
 		*v4 = true
 	}
 
-	mainIP, ipList := ip.MainIP(*verbose, *iface)
+	mainIP, ipList := ip.MainIPVerbose(*verbose, *iface)
 	log.Printf("Main IP: %s", mainIP)
 	log.Printf("IP: %v", ipList)
 	log.Printf("Outbound IP: %v", ip.Outbound())
