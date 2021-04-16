@@ -1,4 +1,4 @@
-module github.com/bingoohuang/ip
+module github.com/bingoohuang/goip
 
 go 1.14
 

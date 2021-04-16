@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/bingoohuang/ip"
+	"github.com/bingoohuang/goip"
 )
 
 func main() {
@@ -19,18 +19,18 @@ func main() {
 		*v4 = true
 	}
 
-	mainIP, ipList := ip.MainIPVerbose(*verbose, *iface)
+	mainIP, ipList := goip.MainIPVerbose(*verbose, *iface)
 	log.Printf("Main IP: %s", mainIP)
 	log.Printf("IP: %v", ipList)
-	log.Printf("Outbound IP: %v", ip.Outbound())
+	log.Printf("Outbound IP: %v", goip.Outbound())
 
 	if *v4 {
-		allIPv4, _ := ip.ListAllIPv4(*iface)
+		allIPv4, _ := goip.ListAllIPv4(*iface)
 		log.Printf("IPv4: %v", allIPv4)
 	}
 
 	if *v6 {
-		allIPv6, _ := ip.ListAllIPv6(*iface)
+		allIPv6, _ := goip.ListAllIPv6(*iface)
 		log.Printf("IPv6: %v", allIPv6)
 	}
 
@@ -54,7 +54,7 @@ func ListIfaces(v4, v6 bool, ifaceName string) {
 }
 
 func listIface(f net.Interface, v4, v6 bool, ifaceName string) {
-	matcher := ip.NewIfaceNameMatcher([]string{ifaceName})
+	matcher := goip.NewIfaceNameMatcher([]string{ifaceName})
 
 	if f.HardwareAddr == nil || f.Flags&net.FlagUp == 0 || f.Flags&net.FlagLoopback == 1 || !matcher.Matches(f.Name) {
 		return
@@ -84,7 +84,7 @@ func listIface(f net.Interface, v4, v6 bool, ifaceName string) {
 			continue
 		}
 
-		if ip.IsIPv4(netip.String()) && !v4 || ip.IsIPv6(netip.String()) && !v6 {
+		if goip.IsIPv4(netip.String()) && !v4 || goip.IsIPv6(netip.String()) && !v6 {
 			continue
 		}
 
@@ -104,28 +104,28 @@ func listIface(f net.Interface, v4, v6 bool, ifaceName string) {
 }
 
 func moreInfo() {
-	externalIP := ip.External()
+	externalIP := goip.External()
 	if externalIP == "" {
 		return
 	}
 
 	log.Printf("公网IP %s", externalIP)
 	if eip := net.ParseIP(externalIP); eip != nil {
-		result, err := ip.TabaoAPI(externalIP)
+		result, err := goip.TabaoAPI(externalIP)
 		if err != nil {
 			log.Printf("TabaoAPI %v", result)
 		}
 	}
 
-	ipInt := ip.ToDecimal(net.ParseIP(externalIP))
+	ipInt := goip.ToDecimal(net.ParseIP(externalIP))
 	log.Printf("Convert %s to decimal number(base 10) : %d", externalIP, ipInt)
 
-	ipResult := ip.FromDecimal(ipInt)
+	ipResult := goip.FromDecimal(ipInt)
 	log.Printf("Convert decimal number(base 10) %d to IPv4 address: %v", ipInt, ipResult)
 
-	isBetween := ip.Betweens(net.ParseIP(externalIP), net.ParseIP("0.0.0.0"), net.ParseIP("255.255.255.255"))
+	isBetween := goip.Betweens(net.ParseIP(externalIP), net.ParseIP("0.0.0.0"), net.ParseIP("255.255.255.255"))
 	log.Printf("0.0.0.0 isBetween 255.255.255.255 and %s : %v", externalIP, isBetween)
 
-	isPublicIP := ip.IsPublic(net.ParseIP(externalIP))
+	isPublicIP := goip.IsPublic(net.ParseIP(externalIP))
 	log.Printf("%s is public ip: %v ", externalIP, isPublicIP)
 }
