@@ -85,7 +85,10 @@ func ListAllIP(predicate func(net.IP) bool, ifaceNames ...string) ([]net.IP, err
 
 	for _, i := range list {
 		f := i.Flags
-		if i.HardwareAddr == nil || f&net.FlagUp == 0 || f&net.FlagLoopback == 1 || !matcher.Matches(i.Name) {
+		if i.HardwareAddr == nil ||
+			f&net.FlagUp != net.FlagUp ||
+			f&net.FlagLoopback == net.FlagLoopback ||
+			!matcher.Matches(i.Name) {
 			continue
 		}
 
